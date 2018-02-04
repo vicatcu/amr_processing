@@ -63,7 +63,7 @@ if(starting_number === -Infinity){
 starting_number++;
 console.log(`starting number will be ${zeroFill(4, starting_number)}`);
 combined_isolates_data = combined_isolates_data.filter(r => r.Include.toLowerCase() === 'yes');
-console.log(`${combined_isolates_data.length} accessions will be included`);
+console.log(`${combined_isolates_data.length} accessions will be included:`);
 
 // pre-process sensititre data
 let sensititre_data = parse(sensititre_csv, {delimiter: '\t'})
@@ -200,19 +200,30 @@ function expandSpeciesRows(species, rows, species_drug_map){
     allOutputDataRowsByAnimalSpecies[species] = allOutputDataRowsByAnimalSpecies[species].concat(newRows);
 }
 
-console.log('These files will be generated: ', Object.keys(allOutputDataRowsByAnimalSpecies).map(k => `${k}.txt`));
+console.log('These files will be generated: ');
+console.log(Object.keys(allOutputDataRowsByAnimalSpecies).map(k => `${k}.txt`));
 Object.keys(allOutputDataRowsByAnimalSpecies).forEach((k) => {
     fs.writeFileSync(path.join(input_data_folder, `${k}.txt`), 
         stringify(allOutputDataRowsByAnimalSpecies[k], {delimiter: '\t', escape: false, quote: false, quotedString: false, quotedEmpty: false }) 
     );
 });
 
-console.log(`Back annotating Unique Specimen Id into '${combined_isolates_filename}'`);
+console.log(`Back annotating Unique Specimen Id and Date Tested into '${combined_isolates_filename}'`);
 combined_isolates_data = parse(combined_isolates_csv, {columns: true});
 combined_isolates_data = combined_isolates_data.map(r => {
     const accession_number = r['Accession #'];
-    r['Unique Specimen ID'] = accession_number_specimen_id_map[accession_number];    
-    r['Date Tested'] = accession_number_date_tested_map[accession_number];
+    if(accession_number_specimen_id_map[accession_number] && r['Unique Specimen ID']){
+        console.error(`New Unique Id would overwrite existing Unique Id for Accession # ${accession_number}`);
+        process.exit(4);
+    }
+
+    if(accession_number_date_tested_map[accession_number] && r['Date Tested']){
+        console.error(`New Date Tested would overwrite existing Date Tested for Accession # ${accession_number}`);
+        process.exit(5);
+    }
+
+    r['Unique Specimen ID'] = accession_number_specimen_id_map[accession_number] || r['Unique Specimen ID'];    
+    r['Date Tested'] = accession_number_date_tested_map[accession_number] || r['Date Tested'];
     r['Include'] = '';
     return r;
 });
