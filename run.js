@@ -196,7 +196,7 @@ function expandSpeciesRows(species, rows, species_drug_map){
     if(!allOutputDataRowsByAnimalSpecies[species]){
         allOutputDataRowsByAnimalSpecies[species] = [];
     }
-    console.log(species);
+    
     allOutputDataRowsByAnimalSpecies[species] = allOutputDataRowsByAnimalSpecies[species].concat(newRows);
 }
 
