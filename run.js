@@ -150,6 +150,7 @@ Object.keys(allOutputDataRowsByAnimalSpecies).forEach((species) => {
         });
     } else {
         const rows = allOutputDataRowsByAnimalSpecies[species];
+        delete allOutputDataRowsByAnimalSpecies[species];
         expandSpeciesRows(species, rows, species_drug_map);
     }
 });
@@ -194,7 +195,8 @@ function expandSpeciesRows(species, rows, species_drug_map){
     species = species.shift();
     if(!allOutputDataRowsByAnimalSpecies[species]){
         allOutputDataRowsByAnimalSpecies[species] = [];
-    }    
+    }
+    console.log(species);
     allOutputDataRowsByAnimalSpecies[species] = allOutputDataRowsByAnimalSpecies[species].concat(newRows);
 }
 
