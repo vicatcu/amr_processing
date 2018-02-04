@@ -21,6 +21,7 @@ const unique_name_prefix = `${state}${zipcode}PPY1`;
 const combined_isolates_csv = fs.readFileSync(path.join(input_data_folder, combined_isolates_filename), 'utf8');
 const sensititre_csv = fs.readFileSync(path.join(input_data_folder, sensititre_filename), 'utf16le').replace(/[\t]+/, '\t'); // remove consecutive delimieters
 const accession_number_specimen_id_map = {};
+const accession_number_date_tested_map = {};
 
 const atb_species_drug_map = {
     'Bovine':  ['AMPICI','CEFTIF','CHLTET','CLINDA','DANOFL','ENROFL','FLORFE','','GENTAM','NEOMYC','OXYTET','PENICI','SDIMET','SPECT','','TIAMUL','TILMIC','','TRISUL','TULATH','TYLO'],
@@ -101,11 +102,12 @@ let allOutputDataRows = combined_isolates_data.map((r, idx) => {
         default: return r[h];
         }                
     });
-    let corresponding_sensitire_row = sensititre_data.findIndex(s => s[6] === accession_number); // 6 is 'column G' in the sensititre data
+    let corresponding_sensitire_row = sensititre_data.findIndex(s => s[6] === accession_number); // 6 is 'column G' in the sensititre data    
     if(corresponding_sensitire_row < 0){
         console.error(`Can't find sensititre record for Accesssion #: '${accession_number}'`);
         process.exit(2);
     }
+    accession_number_date_tested_map[accession_number] = sensititre_data[corresponding_sensitire_row][39]; // the test date    
     return row.concat(post_sensitire_data[corresponding_sensitire_row]);
 })
 
@@ -206,7 +208,10 @@ Object.keys(allOutputDataRowsByAnimalSpecies).forEach((k) => {
 console.log(`Back annotating Unique Specimen Id into '${combined_isolates_filename}'`);
 combined_isolates_data = parse(combined_isolates_csv, {columns: true});
 combined_isolates_data = combined_isolates_data.map(r => {
-    r['Unique Specimen ID'] = accession_number_specimen_id_map[r['Accession #']];    
+    const accession_number = r['Accession #'];
+    r['Unique Specimen ID'] = accession_number_specimen_id_map[accession_number];    
+    r['Date Tested'] = accession_number_date_tested_map[accession_number];
+    r['Include'] = '';
     return r;
 });
 fs.writeFileSync(path.join(input_data_folder, 'output.csv'), stringify(combined_isolates_data, {header: true}));
