@@ -20,6 +20,7 @@ const unique_name_prefix = `${state}${zipcode}PPY1`;
 
 const combined_isolates_csv = fs.readFileSync(path.join(input_data_folder, combined_isolates_filename), 'utf8');
 const sensititre_csv = fs.readFileSync(path.join(input_data_folder, sensititre_filename), 'utf16le').replace(/[\t]+/, '\t'); // remove consecutive delimieters
+const accession_number_specimen_id_map = {};
 
 const atb_species_drug_map = {
     'Bovine':  ['AMPICI','CEFTIF','CHLTET','CLINDA','DANOFL','ENROFL','FLORFE','','GENTAM','NEOMYC','OXYTET','PENICI','SDIMET','SPECT','','TIAMUL','TILMIC','','TRISUL','TULATH','TYLO'],
@@ -27,18 +28,27 @@ const atb_species_drug_map = {
     'Chicken': ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
     'Turkey':  ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
     'Duck':    ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
-    'Equine':  ['AMIKAC','AMPICI','AZITHR','CEFAZO','CEFTAZ','CEFTIF','CHLORA','CLARYT','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','OXACIL','PENICI','RIFAM','TETRA','TICARC','TICCLA','TRISUL'], // Note: guessed RIFAM for Rifampin
+    'Equine':  ['AMIKAC','AMPICI','AZITHR','CEFAZO','CEFTAZ','CEFTIF','CHLORA','CLARYT','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','OXACIL','PENICI','RIFAMP','TETRA','TICARC','TICCLA','TRISUL'],
     'Canine':  {
         'dog-cat GN': {
-            'drug_map': [],
+            'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEFTAZ','CEPALE','CHLORA','DOXYCY','ENROFL','GENTAM','IMIPEN','MARBOF','ORBIFL','PIPTAZ','PRADOF','TETRA','TRISUL'],
             'organism_regex': /(Escherichia coli)|(Salmonella species)/
         },
         'dog-cat GP': {
-            'drug_map': [],
+            'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEPHAL','CHLORA','CLINDA','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','MARBOF','MINOCY','NITRO','OXACIL','PENICI','PRADOF','RIFAMP','TETRA','TRISUL','VANCOM'],
             'organism_regex': /(Staphylococcus)/
         }
     },
-    'Feline':  []
+    'Feline':  {
+        'dog-cat GN': {
+            'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEFTAZ','CEPALE','CHLORA','DOXYCY','ENROFL','GENTAM','IMIPEN','MARBOF','ORBIFL','PIPTAZ','PRADOF','TETRA','TRISUL'],
+            'organism_regex': /(Escherichia coli)|(Salmonella species)/
+        },
+        'dog-cat GP': {
+            'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEPHAL','CHLORA','CLINDA','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','MARBOF','MINOCY','NITRO','OXACIL','PENICI','PRADOF','RIFAMP','TETRA','TRISUL','VANCOM'],
+            'organism_regex': /(Staphylococcus)/
+        }
+    }
 };
 
 // pre-process combined isolates data
@@ -80,11 +90,12 @@ let post_sensitire_data = sensititre_data.map(r => {
 });
 
 let allOutputDataRows = combined_isolates_data.map((r, idx) => {
-    const accession_number =  r['Accession #'];    
-    let row = combined_output_headers.map(h => {
+    const accession_number =  r['Accession #']; 
+    accession_number_specimen_id_map[accession_number] = unique_name_prefix + zeroFill(4, starting_number++);
+    let row = combined_output_headers.map(h => {            
         switch(h){
         case 'Laboratory Name': return lab_name;
-        case 'Unique Specimen ID': return unique_name_prefix + zeroFill(4, starting_number++);
+        case 'Unique Specimen ID': return accession_number_specimen_id_map[accession_number];
         case 'Program Name': return ''; //TODO: should this be filled in somehow
         case 'Final Diagnosis ': return ''; //TODO: should this be filled in somehow
         default: return r[h];
@@ -117,25 +128,32 @@ console.dir(Object.keys(allOutputDataRowsByAnimalSpecies)
     }) 
 )
 
-const atb_offset = combined_output_headers.length + 1;    
+const atb_offset = combined_output_headers.length + 1;
+const dropComplexSpecies = [];
+
 Object.keys(allOutputDataRowsByAnimalSpecies).forEach((species) => {    
     const species_drug_map = atb_species_drug_map[species];    
     const species_has_organism_partition = !Array.isArray(species_drug_map);
 
     if(species_has_organism_partition){
         const organism_partitions = Object.keys(species_drug_map);
+        dropComplexSpecies.push(species);
         organism_partitions.forEach((partition) => {            
             const obj = species_drug_map[partition];            
             const drug_map = obj.drug_map;
             const organism_regex = obj.organism_regex;
             const rows = allOutputDataRowsByAnimalSpecies[species].filter(r => organism_regex.test(r[7])); // r[7] is the Bacterial Organism Isolated
             const meta_species = [species, partition];
-            expandSpeciesRows(meta_species, rows, drug_map);    
+            expandSpeciesRows(meta_species, rows, drug_map);
         });
     } else {
         const rows = allOutputDataRowsByAnimalSpecies[species];
         expandSpeciesRows(species, rows, species_drug_map);
     }
+});
+
+dropComplexSpecies.forEach((species) => {
+    delete allOutputDataRowsByAnimalSpecies[species];
 });
 
 function expandSpeciesRows(species, rows, species_drug_map){
@@ -172,5 +190,25 @@ function expandSpeciesRows(species, rows, species_drug_map){
         effectiveSpeciesTarget = effectiveSpeciesTarget[s];
     }
     species = species.shift();
-    allOutputDataRowsByAnimalSpecies[species] = newRows;    
+    if(!allOutputDataRowsByAnimalSpecies[species]){
+        allOutputDataRowsByAnimalSpecies[species] = [];
+    }    
+    allOutputDataRowsByAnimalSpecies[species] = allOutputDataRowsByAnimalSpecies[species].concat(newRows);
 }
+
+console.log('These files will be generated: ', Object.keys(allOutputDataRowsByAnimalSpecies).map(k => `${k}.txt`));
+Object.keys(allOutputDataRowsByAnimalSpecies).forEach((k) => {
+    fs.writeFileSync(path.join(input_data_folder, `${k}.txt`), 
+        stringify(allOutputDataRowsByAnimalSpecies[k], {delimiter: '\t', escape: false, quote: false, quotedString: false, quotedEmpty: false }) 
+    );
+});
+
+console.log(`Back annotating Unique Specimen Id into '${combined_isolates_filename}'`);
+combined_isolates_data = parse(combined_isolates_csv, {columns: true});
+combined_isolates_data = combined_isolates_data.map(r => {
+    r['Unique Specimen ID'] = accession_number_specimen_id_map[r['Accession #']];    
+    return r;
+});
+fs.writeFileSync(path.join(input_data_folder, 'output.csv'), stringify(combined_isolates_data, {header: true}));
+
+console.log('done');
