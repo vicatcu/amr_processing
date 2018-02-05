@@ -19,7 +19,7 @@ const zipcode = argv.zip || '14853'
 const unique_name_prefix = `${state}${zipcode}PPY1`;
 
 const combined_isolates_csv = fs.readFileSync(path.join(input_data_folder, combined_isolates_filename), 'utf8');
-const sensititre_csv = fs.readFileSync(path.join(input_data_folder, sensititre_filename), 'utf16le').replace(/[\t]+/, '\t'); // remove consecutive delimieters
+const sensititre_csv = fs.readFileSync(path.join(input_data_folder, sensititre_filename), 'utf16le').replace(/[\t]+/g, '\t').replace(/[\u0000]+/g, ''); // remove consecutive delimieters
 const accession_number_specimen_id_map = {};
 const accession_number_date_tested_map = {};
 
@@ -171,7 +171,10 @@ function expandSpeciesRows(species, rows, species_drug_map){
             const a = row[i], b = row[i+1], c = row[i+2];
             const drugIndex = species_drug_map.indexOf(a);
             if(drugIndex < 0){
-                console.error(`Encountered unknown drug '${a}' in species '${species}' Sensititre data`);
+                const indexOfAccession = Object.keys(accession_number_specimen_id_map).map(k => accession_number_specimen_id_map[k]).indexOf(row[1]);                
+                const accessionNumber = Object.keys(accession_number_specimen_id_map)[indexOfAccession];
+                console.error(`Encountered unknown drug '${a}' in species '${species}' Sensititre data for Accession # ${accessionNumber}`, i-atb_offset);
+                console.log(row.slice(atb_offset));
                 process.exit(3);
             }
             const base = drugIndex * 3;
