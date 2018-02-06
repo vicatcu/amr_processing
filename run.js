@@ -93,6 +93,14 @@ let post_sensitire_data = sensititre_data.map(r => {
 
 let allOutputDataRows = combined_isolates_data.map((r, idx) => {
     const accession_number =  r['Accession #']; 
+    const bacterialSpecimenIsolated = r['Bacterial Organism Isolated'];
+    const salmonellaSerotype = (r['Salmonella Serotype'] || "".trim());
+    const isSalmonella = /Salmonella/.test(bacterialSpecimenIsolated);
+    if (isSalmonella && !salmonellaSerotype) {
+        console.error(`WARNING: Accession #${accession_number} is Salmonella but is missing Serotype`);
+        return null;
+    }
+
     accession_number_specimen_id_map[accession_number] = unique_name_prefix + zeroFill(4, starting_number++);
     let row = combined_output_headers.map(h => {            
         switch(h){
@@ -101,7 +109,8 @@ let allOutputDataRows = combined_isolates_data.map((r, idx) => {
         case 'Unique Specimen ID': return accession_number_specimen_id_map[accession_number];
         default: return r[h];
         }                
-    });
+    });    
+
     let corresponding_sensitire_row = sensititre_data.findIndex(s => s[6] === accession_number); // 6 is 'column G' in the sensititre data    
     if(corresponding_sensitire_row < 0){
         console.error(`Can't find sensititre record for Accesssion #: '${accession_number}'`);
@@ -110,6 +119,8 @@ let allOutputDataRows = combined_isolates_data.map((r, idx) => {
     accession_number_date_tested_map[accession_number] = sensititre_data[corresponding_sensitire_row][39]; // the test date    
     return row.concat(post_sensitire_data[corresponding_sensitire_row]);
 })
+
+allOutputDataRows = allOutputDataRows.filter(r => r);
 
 let allOutputDataRowsByAnimalSpecies = {};
 const speciesIndex = combined_output_headers.indexOf('Animal Species');
