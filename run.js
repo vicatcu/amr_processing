@@ -192,9 +192,19 @@ function expandSpeciesRows(species, rows, species_drug_map){
             targetDrugContent[base] = a;
             targetDrugContent[base+1] = b;
             targetDrugContent[base+2] = c;
+        }            
+
+        for(let i = 0; i < species_drug_map.length; i++){
+            const atb = (targetDrugContent[i*3] || "").trim();
+            if(species_drug_map[i] && !atb){
+                const indexOfAccession = Object.keys(accession_number_specimen_id_map).map(k => accession_number_specimen_id_map[k]).indexOf(row[1]);                
+                const accessionNumber = Object.keys(accession_number_specimen_id_map)[indexOfAccession];                
+                console.error(`WARNING: Accession # ${accessionNumber} is missing ATB '${species_drug_map[i]}'`);
+            }
         }
-        
+
         const newRow = row.slice(0, atb_offset).concat(targetDrugContent).map(v => `"=""${v}"""`)
+
         return newRow;
     });
 
