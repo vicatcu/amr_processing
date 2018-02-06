@@ -7,6 +7,7 @@ const argv = require('minimist')(process.argv.slice(2));
 const zeroFill = require('zero-fill');
 
 const lab_name = argv.lab || 'NY - Cornell University Animal Health Diagnostic Center';
+const program_name = argv.program || 'NAHLN AMR Pilot Project';
 const combined_output_headers = (argv.combined_output_headers || 'Laboratory Name,Unique Specimen ID,State of Animal Origin,Animal Species,Reason for submission ,Program Name,Specimen/ source tissue,Bacterial Organism Isolated,Salmonella Serotype,Final Diagnosis ,Date of Isolation').split(",");
 const include_header_name = argv.include_header || 'Include';
 const input_data_folder = argv.folder || 'C:\\Users\\msp13\\Desktop\\AMRMasterList';
@@ -95,10 +96,9 @@ let allOutputDataRows = combined_isolates_data.map((r, idx) => {
     accession_number_specimen_id_map[accession_number] = unique_name_prefix + zeroFill(4, starting_number++);
     let row = combined_output_headers.map(h => {            
         switch(h){
-        case 'Laboratory Name': return lab_name;
+        case 'Laboratory Name': return r[h] || lab_name;
+        case 'Program Name': return r[h] || program_name;
         case 'Unique Specimen ID': return accession_number_specimen_id_map[accession_number];
-        case 'Program Name': return ''; //TODO: should this be filled in somehow
-        case 'Final Diagnosis ': return ''; //TODO: should this be filled in somehow
         default: return r[h];
         }                
     });
