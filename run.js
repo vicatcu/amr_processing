@@ -234,6 +234,26 @@ Object.keys(allOutputDataRowsByAnimalSpecies).forEach((k) => {
 
 console.log(`Back annotating Unique Specimen Id and Date Tested into '${combined_isolates_filename}'`);
 combined_isolates_data = parse(combined_isolates_csv, {columns: true});
+
+combined_isolates_data.sort((a, b) => {
+    if (a.Include && !b.Include) {
+        return -1;
+    }
+    if (b.Include && !a.Include) {
+        return 1;
+    }
+    
+    if(a['Accession #'] < b['Accession #']){
+        return -1;
+    }
+
+    if(a['Accession #'] > b['Accession #']){
+        return 1;
+    }
+
+    return 0;    
+});
+
 combined_isolates_data = combined_isolates_data.map(r => {
     const accession_number = r['Accession #'];
     if(accession_number_specimen_id_map[accession_number] && r['Unique Specimen ID']){
@@ -251,6 +271,7 @@ combined_isolates_data = combined_isolates_data.map(r => {
     r['Include'] = '';
     return r;
 });
+
 fs.writeFileSync(path.join(input_data_folder, 'output.csv'), stringify(combined_isolates_data, {header: true}));
 
 console.log('done');
