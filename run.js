@@ -5,6 +5,7 @@ const parse = require('csv-parse/lib/sync');
 const stringify = require('csv-stringify/lib/sync');
 const argv = require('minimist')(process.argv.slice(2));
 const zeroFill = require('zero-fill');
+const moment = require('moment');
 
 const lab_name = argv.lab || 'NY - Cornell University Animal Health Diagnostic Center';
 const program_name = argv.program || 'NAHLN AMR Pilot Project';
@@ -63,7 +64,7 @@ if(starting_number === -Infinity){
 }
 starting_number++;
 console.log(`starting number will be ${zeroFill(4, starting_number)}`);
-combined_isolates_data = combined_isolates_data.filter(r => r.Include.toLowerCase() === 'yes');
+combined_isolates_data = combined_isolates_data.filter(r => r[include_header_name].toLowerCase() === 'yes');
 console.log(`${combined_isolates_data.length} accessions will be included:`);
 
 // pre-process sensititre data
@@ -76,7 +77,7 @@ if(sensititre_violations.length > 0){
 }
 
 let post_sensitire_data = sensititre_data.map(r => {
-    let date_value = r[39]; 
+    let date_value = moment(r[39],'YYYY-MM-DD HH:mm:ss').format('M/D/YYYY');
     let drug_data = r.slice(40);
     let consolidated_drug_data = [];
     // there are 100 wells worth of data, 3 columns per well
@@ -116,7 +117,7 @@ let allOutputDataRows = combined_isolates_data.map((r, idx) => {
         console.error(`Can't find sensititre record for Accesssion #: '${accession_number}'`);
         process.exit(2);
     }
-    accession_number_date_tested_map[accession_number] = sensititre_data[corresponding_sensitire_row][39]; // the test date    
+    accession_number_date_tested_map[accession_number] = moment(sensititre_data[corresponding_sensitire_row][39],'YYYY-MM-DD HH:mm:ss').format('M/D/YYYY'); // the test date
     return row.concat(post_sensitire_data[corresponding_sensitire_row]);
 })
 
@@ -196,11 +197,18 @@ function expandSpeciesRows(species, rows, species_drug_map){
 
         for(let i = 0; i < species_drug_map.length; i++){
             const atb = (targetDrugContent[i*3] || "").trim();
-            if(species_drug_map[i] && !atb){
+            const mic = (targetDrugContent[i*3 + 1] || "").trim();
+            if(species_drug_map[i]){
                 const indexOfAccession = Object.keys(accession_number_specimen_id_map).map(k => accession_number_specimen_id_map[k]).indexOf(row[1]);                
-                const accessionNumber = Object.keys(accession_number_specimen_id_map)[indexOfAccession];                
-                console.error(`WARNING: Accession # ${accessionNumber} is missing ATB '${species_drug_map[i]}'`);
+                const accessionNumber = Object.keys(accession_number_specimen_id_map)[indexOfAccession];                                
+                if(!atb){
+                    console.error(`WARNING: Accession # ${accessionNumber} is missing ATB '${species_drug_map[i]}'`);
+                } else if(!mic) {
+                    console.error(`WARNING: Accession # ${accessionNumber} is missing MIC for ATB '${species_drug_map[i]}'`);
+                }
             }
+
+
         }
 
         const newRow = row.slice(0, atb_offset).concat(targetDrugContent).map(v => `"=""${v}"""`)
@@ -236,13 +244,15 @@ console.log(`Back annotating Unique Specimen Id and Date Tested into '${combined
 combined_isolates_data = parse(combined_isolates_csv, {columns: true});
 
 combined_isolates_data.sort((a, b) => {
-    if (a.Include && !b.Include) {
+    // first sort by Include column
+    if (a[include_header_name] && !b[include_header_name]) {
         return -1;
     }
-    if (b.Include && !a.Include) {
+    if (b[include_header_name] && !a[include_header_name]) {
         return 1;
     }
     
+    // then sort by Accession # column
     if(a['Accession #'] < b['Accession #']){
         return -1;
     }
@@ -268,7 +278,7 @@ combined_isolates_data = combined_isolates_data.map(r => {
 
     r['Unique Specimen ID'] = accession_number_specimen_id_map[accession_number] || r['Unique Specimen ID'];    
     r['Date Tested'] = accession_number_date_tested_map[accession_number] || r['Date Tested'];
-    r['Include'] = '';
+    r[include_header_name] = ''; // clear the include header
     return r;
 });
 
