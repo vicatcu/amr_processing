@@ -264,7 +264,9 @@ combined_isolates_data.sort((a, b) => {
     return 0;    
 });
 
-combined_isolates_data = combined_isolates_data.map(r => {
+let cumulative_counts_by_species = {};
+let total_samples = 0;
+combined_isolates_data = combined_isolates_data.map(r => {    
     const accession_number = r['Accession #'];
     if(accession_number_specimen_id_map[accession_number] && r['Unique Specimen ID']){
         console.error(`New Unique Id would overwrite existing Unique Id for Accession # ${accession_number}`);
@@ -279,9 +281,29 @@ combined_isolates_data = combined_isolates_data.map(r => {
     r['Unique Specimen ID'] = accession_number_specimen_id_map[accession_number] || r['Unique Specimen ID'];    
     r['Date Tested'] = accession_number_date_tested_map[accession_number] || r['Date Tested'];
     r[include_header_name] = ''; // clear the include header
+
+    // tally cumulative counts by species for those that have unique specimen id's attached
+    if(r['Unique Specimen ID']){
+        total_samples++;
+        let species_organism = `${r['Animal Species']} - `;
+        let organism = r['Bacterial Organism Isolated'];
+        if(/Salmonella species/.test(organism)){
+            species_organism += 'Salmonella species';
+        } else if (/Staphylococcus/.test(organism)) {
+            species_organism += 'Staphylococcus';
+        } else {
+            species_organism += organism;
+        }
+
+        if(!cumulative_counts_by_species[species_organism]){ cumulative_counts_by_species[species_organism] = 0; }
+        cumulative_counts_by_species[species_organism]++;
+    }
+
     return r;
 });
 
 fs.writeFileSync(path.join(input_data_folder, 'output.csv'), stringify(combined_isolates_data, {header: true}));
 
+console.log(`Cumulative Counts by Species / Organism:`, JSON.stringify(cumulative_counts_by_species, null, 2));
+console.log(`${total_samples} Total Samples`)
 console.log('done');
