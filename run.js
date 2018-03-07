@@ -26,13 +26,13 @@ const accession_number_specimen_id_map = {};
 const accession_number_date_tested_map = {};
 
 const atb_species_drug_map = {
-    'Bovine':  ['AMPICI','CEFTIF','CHLTET','CLINDA','DANOFL','ENROFL','FLORFE','','GENTAM','NEOMYC','OXYTET','PENICI','SDIMET','SPECT','','TIAMUL','TILMIC','','TRISUL','TULATH','TYLO'],
-    'Porcine': ['AMPICI','CEFTIF','CHLTET','CLINDA','DANOFL','ENROFL','FLORFE','','GENTAM','NEOMYC','OXYTET','PENICI','SDIMET','SPECT','','TIAMUL','TILMIC','','TRISUL','TULATH','TYLO'],
-    'Chicken': ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
-    'Turkey':  ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
-    'Duck':    ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
+    'Cattle':  ['AMPICI','CEFTIF','CHLTET','CLINDA','DANOFL','ENROFL','FLORFE','','GENTAM','NEOMYC','OXYTET','PENICI','SDIMET','SPECT','','TIAMUL','TILMIC','','TRISUL','TULATH','TYLO'],
+    'Swine': ['AMPICI','CEFTIF','CHLTET','CLINDA','DANOFL','ENROFL','FLORFE','','GENTAM','NEOMYC','OXYTET','PENICI','SDIMET','SPECT','','TIAMUL','TILMIC','','TRISUL','TULATH','TYLO'],
+    'Poultry-domestic chicken': ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
+    'Poultry-domestic turkey':  ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
+    'Poultry-domestic duck':    ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
     'Equine':  ['AMIKAC','AMPICI','AZITHR','CEFAZO','CEFTAZ','CEFTIF','CHLORA','CLARYT','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','OXACIL','PENICI','RIFAMP','TETRA','TICARC','TICCLA','TRISUL'],
-    'Canine':  {
+    'Dog':  {
         'dog-cat GN': {
             'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEFTAZ','CEPALE','CHLORA','DOXYCY','ENROFL','GENTAM','IMIPEN','MARBOF','ORBIFL','PIPTAZ','PRADOF','TETRA','TRISUL'],
             'organism_regex': /(Escherichia coli)|(Salmonella species)/
@@ -42,7 +42,7 @@ const atb_species_drug_map = {
             'organism_regex': /(Staphylococcus)/
         }
     },
-    'Feline':  {
+    'Cat':  {
         'dog-cat GN': {
             'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEFTAZ','CEPALE','CHLORA','DOXYCY','ENROFL','GENTAM','IMIPEN','MARBOF','ORBIFL','PIPTAZ','PRADOF','TETRA','TRISUL'],
             'organism_regex': /(Escherichia coli)|(Salmonella species)/
@@ -68,7 +68,14 @@ combined_isolates_data = combined_isolates_data.filter(r => r[include_header_nam
 console.log(`${combined_isolates_data.length} accessions will be included:`);
 
 // pre-process sensititre data
-let sensititre_data = parse(sensititre_csv, {delimiter: '\t'})
+let sensititre_data;
+try {
+    sensititre_data = parse(sensititre_csv, {delimiter: '\t'});
+} 
+catch(e){
+    console.log('Sensitre Data parse error', e.message);
+    process.exit(1);
+}
 const sensititre_violations = sensititre_data.filter(d => d.length !== 340);
 if(sensititre_violations.length > 0){
     console.dir(sensititre_violations);
