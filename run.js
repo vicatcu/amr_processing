@@ -26,7 +26,7 @@ const accession_number_specimen_id_map = {};
 const accession_number_date_tested_map = {};
 
 const atb_species_drug_map = {
-    'Cattle':  ['AMPICI','CEFTIF','CHLTET','CLINDA','DANOFL','ENROFL','FLORFE','','GENTAM','NEOMYC','OXYTET','PENICI','SDIMET','SPECT','','TIAMUL','TILMIC','','TRISUL','TULATH','TYLO'],
+    'Cattle':  ['AMPICI','CEFTIF','CHLTET','CLINDA','DANOFL','ENROFL','FLORFE','GAMITH','GENTAM','NEOMYC','OXYTET','PENICI','SDIMET','SPECT','TILDIP','TIAMUL','TILMIC','TETRA','TRISUL','TULATH','TYLO'],
     'Swine': ['AMPICI','CEFTIF','CHLTET','CLINDA','DANOFL','ENROFL','FLORFE','','GENTAM','NEOMYC','OXYTET','PENICI','SDIMET','SPECT','','TIAMUL','TILMIC','','TRISUL','TULATH','TYLO'],
     'Poultry-domestic chicken': ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
     'Poultry-domestic turkey':  ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
