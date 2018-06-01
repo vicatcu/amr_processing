@@ -35,7 +35,7 @@ const atb_species_drug_map = {
     'Dog':  {
         'dog-cat GN': {
             'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEFTAZ','CEPALE','CHLORA','DOXYCY','ENROFL','GENTAM','IMIPEN','MARBOF','ORBIFL','PIPTAZ','PRADOF','TETRA','TRISUL'],
-            'organism_regex': /(Escherichia coli)|(Salmonella species)/
+            'organism_regex': /(Escherichia coli)|(Salmonella enterica)/
         },
         'dog-cat GP': {
             'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEPHAL','CHLORA','CLINDA','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','MARBOF','MINOCY','NITRO','OXACIL','PENICI','PRADOF','RIFAMP','TETRA','TRISUL','VANCOM'],
@@ -45,7 +45,7 @@ const atb_species_drug_map = {
     'Cat':  {
         'dog-cat GN': {
             'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEFTAZ','CEPALE','CHLORA','DOXYCY','ENROFL','GENTAM','IMIPEN','MARBOF','ORBIFL','PIPTAZ','PRADOF','TETRA','TRISUL'],
-            'organism_regex': /(Escherichia coli)|(Salmonella species)/
+            'organism_regex': /(Escherichia coli)|(Salmonella enterica)/
         },
         'dog-cat GP': {
             'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEPHAL','CHLORA','CLINDA','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','MARBOF','MINOCY','NITRO','OXACIL','PENICI','PRADOF','RIFAMP','TETRA','TRISUL','VANCOM'],
