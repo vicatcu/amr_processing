@@ -1,3 +1,4 @@
+// jshint esversion: 6
 const fs = require('fs');
 const path = require('path');
 
@@ -10,6 +11,7 @@ const moment = require('moment');
 const lab_name = argv.lab || 'NY - Cornell University Animal Health Diagnostic Center';
 const program_name = argv.program || 'NAHLN AMR Pilot Project';
 const combined_output_headers = (argv.combined_output_headers || 'Laboratory Name,Unique Specimen ID,State of Animal Origin,Animal Species,Reason for submission ,Program Name,Specimen/ source tissue,Bacterial Organism Isolated,Salmonella Serotype,Final Diagnosis ,Date of Isolation').split(",");
+const bacterialOrganismIsolatedColumn = combined_output_headers.indexOf('Bacterial Organism Isolated'); 
 const include_header_name = argv.include_header || 'Include';
 const input_data_folder = argv.folder || 'C:\\Users\\msp13\\Desktop\\AMRMasterList';
 const combined_isolates_filename = argv.combined || `Missy's Master Spreadsheet.csv`;
@@ -17,7 +19,7 @@ const sensititre_filename = argv.sensititre || `SWINExportFile.TXT`;
 
 // for name generation
 const state = argv.state || 'NY';
-const zipcode = argv.zip || '14853'
+const zipcode = argv.zip || '14853';
 const unique_name_prefix = `${state}${zipcode}PPY2`;
 
 const combined_isolates_csv = fs.readFileSync(path.join(input_data_folder, combined_isolates_filename), 'utf8');
@@ -35,7 +37,7 @@ const atb_species_drug_map = {
     'Dog':  {
         'dog-cat GN': {
             'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEFTAZ','CEPALE','CHLORA','DOXYCY','ENROFL','GENTAM','IMIPEN','MARBOF','ORBIFL','PIPTAZ','PRADOF','TETRA','TRISUL'],
-            'organism_regex': /(Escherichia coli)|(Salmonella enterica)/
+            'organism_regex': /(Escherichia coli)/
         },
         'dog-cat GP': {
             'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEPHAL','CHLORA','CLINDA','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','MARBOF','MINOCY','NITRO','OXACIL','PENICI','PRADOF','RIFAMP','TETRA','TRISUL','VANCOM'],
@@ -45,7 +47,7 @@ const atb_species_drug_map = {
     'Cat':  {
         'dog-cat GN': {
             'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEFTAZ','CEPALE','CHLORA','DOXYCY','ENROFL','GENTAM','IMIPEN','MARBOF','ORBIFL','PIPTAZ','PRADOF','TETRA','TRISUL'],
-            'organism_regex': /(Escherichia coli)|(Salmonella enterica)/
+            'organism_regex': /(Escherichia coli)/
         },
         'dog-cat GP': {
             'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEPHAL','CHLORA','CLINDA','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','MARBOF','MINOCY','NITRO','OXACIL','PENICI','PRADOF','RIFAMP','TETRA','TRISUL','VANCOM'],
@@ -55,10 +57,10 @@ const atb_species_drug_map = {
 };
 
 // pre-process combined isolates data
-let combined_isolates_data = parse(combined_isolates_csv, {columns: true})
+let combined_isolates_data = parse(combined_isolates_csv, {columns: true});
 let starting_number = combined_isolates_data.map(r => r['Unique Specimen ID'].slice(-4))
     .filter(v => v.trim()) // get rid of blanks
-    .reduce((t,v) => +v > t ? +v : t, -Infinity) // find the maximum value
+    .reduce((t,v) => +v > t ? +v : t, -Infinity); // find the maximum value
 if(starting_number === -Infinity){
     starting_number = 0;
 }
@@ -126,7 +128,7 @@ let allOutputDataRows = combined_isolates_data.map((r, idx) => {
     }
     accession_number_date_tested_map[accession_number] = moment(sensititre_data[corresponding_sensitire_row][39],'YYYY-MM-DD HH:mm:ss').format('M/D/YYYY'); // the test date
     return row.concat(post_sensitire_data[corresponding_sensitire_row]);
-})
+});
 
 allOutputDataRows = allOutputDataRows.filter(r => r);
 
@@ -145,9 +147,9 @@ console.dir(Object.keys(allOutputDataRowsByAnimalSpecies)
         return {
             species: k,
             count: allOutputDataRowsByAnimalSpecies[k].length
-        }
+        };
     }) 
-)
+);
 
 const atb_offset = combined_output_headers.length + 1;
 const dropComplexSpecies = [];
@@ -163,7 +165,9 @@ Object.keys(allOutputDataRowsByAnimalSpecies).forEach((species) => {
             const obj = species_drug_map[partition];            
             const drug_map = obj.drug_map;
             const organism_regex = obj.organism_regex;
-            const rows = allOutputDataRowsByAnimalSpecies[species].filter(r => organism_regex.test(r[7])); // r[7] is the Bacterial Organism Isolated
+            const rows = allOutputDataRowsByAnimalSpecies[species]
+              .filter(r => organism_regex.test(r[bacterialOrganismIsolatedColumn])); 
+              // r[7] is the Bacterial Organism Isolated
             const meta_species = [species, partition];
             expandSpeciesRows(meta_species, rows, drug_map);
         });
@@ -218,7 +222,7 @@ function expandSpeciesRows(species, rows, species_drug_map){
 
         }
 
-        const newRow = row.slice(0, atb_offset).concat(targetDrugContent).map(v => `"=""${v}"""`)
+        const newRow = row.slice(0, atb_offset).concat(targetDrugContent).map(v => `"=""${v}"""`);
 
         return newRow;
     });
@@ -312,5 +316,5 @@ combined_isolates_data = combined_isolates_data.map(r => {
 fs.writeFileSync(path.join(input_data_folder, 'output.csv'), stringify(combined_isolates_data, {header: true}));
 
 console.log(`Cumulative Counts by Species / Organism:`, JSON.stringify(cumulative_counts_by_species, null, 2));
-console.log(`${total_samples} Total Samples`)
+console.log(`${total_samples} Total Samples`);
 console.log('done');
