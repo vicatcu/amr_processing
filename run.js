@@ -18,7 +18,7 @@ const sensititre_filename = argv.sensititre || `SWINExportFile.TXT`;
 // for name generation
 const state = argv.state || 'NY';
 const zipcode = argv.zip || '14853'
-const unique_name_prefix = `${state}${zipcode}PPY1`;
+const unique_name_prefix = `${state}${zipcode}PPY2`;
 
 const combined_isolates_csv = fs.readFileSync(path.join(input_data_folder, combined_isolates_filename), 'utf8');
 const sensititre_csv = fs.readFileSync(path.join(input_data_folder, sensititre_filename), 'utf16le').replace(/[\t]+/g, '\t').replace(/[\u0000]+/g, ''); // remove consecutive delimieters
@@ -26,8 +26,8 @@ const accession_number_specimen_id_map = {};
 const accession_number_date_tested_map = {};
 
 const atb_species_drug_map = {
-    'Cattle':  ['AMPICI','CEFTIF','CHLTET','CLINDA','DANOFL','ENROFL','FLORFE','GAMITH','GENTAM','NEOMYC','OXYTET','PENICI','SDIMET','SPECT','TETRA','TIAMUL','TILMIC','TILDIP','TRISUL','TULATH','TYLO'],
-    'Swine': ['AMPICI','CEFTIF','CHLTET','CLINDA','DANOFL','ENROFL','FLORFE','GAMITH','GENTAM','NEOMYC','OXYTET','PENICI','SDIMET','SPECT','TETRA','TIAMUL','TILMIC','TILDIP','TRISUL','TULATH','TYLO'],
+    'Cattle':  ['AMPICI','CEFTIF','CLINDA','DANOFL','ENROFL','FLORFE','GAMITH','GENTAM','NEOMYC','PENICI','SDIMET','SPECT','TETRA','TIAMUL','TILMIC','TILDIP','TRISUL','TULATH','TYLO'],
+    'Swine': ['AMPICI','CEFTIF','CLINDA','DANOFL','ENROFL','FLORFE','GAMITH','GENTAM','NEOMYC','PENICI','SDIMET','SPECT','TETRA','TIAMUL','TILMIC','TILDIP','TRISUL','TULATH','TYLO'],
     'Poultry-domestic chicken': ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
     'Poultry-domestic turkey':  ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
     'Poultry-domestic duck':    ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
