@@ -28,11 +28,11 @@ const accession_number_specimen_id_map = {};
 const accession_number_date_tested_map = {};
 
 const atb_species_drug_map = {
-    'Cattle':  ['AMPICI','CEFTIF','CLINDA','DANOFL','ENROFL','FLORFE','GAMITH','GENTAM','NEOMYC','PENICI','SDIMET','SPECT','TETRA','TIAMUL','TILMIC','TILDIP','TRISUL','TULATH','TYLO'],
-    'Swine': ['AMPICI','CEFTIF','CLINDA','DANOFL','ENROFL','FLORFE','GAMITH','GENTAM','NEOMYC','PENICI','SDIMET','SPECT','TETRA','TIAMUL','TILMIC','TILDIP','TRISUL','TULATH','TYLO'],
+    'Cattle':  ['AMPICI','CEFTIF','CLINDA','DANOFL','ENROFL','FLORFE','GAMITH','GENTAM','NEOMYC','PENICI','SDIMET','SPECT','TETRA','TIAMUL','TILDIP','TILMIC','TRISUL','TULATH','TYLO'],
+    'Swine': ['AMPICI','CEFTIF','CLINDA','DANOFL','ENROFL','FLORFE','GAMITH','GENTAM','NEOMYC','PENICI','SDIMET','SPECT','TETRA','TIAMUL','TILDIP','TILMIC','TRISUL','TULATH','TYLO'],
     'Poultry-domestic chicken': ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
     'Poultry-domestic turkey':  ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
-    'Poultry-domestic duck':    ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
+    'Poultry-domestic ducks':    ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
     'Equine':  ['AMIKAC','AMPICI','AZITHR','CEFAZO','CEFTAZ','CEFTIF','CHLORA','CLARYT','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','OXACIL','PENICI','RIFAMP','TETRA','TICARC','TICCLA','TRISUL'],
     'Dog':  {
         'dog-cat GN': {
@@ -155,7 +155,11 @@ const atb_offset = combined_output_headers.length + 1;
 const dropComplexSpecies = [];
 
 Object.keys(allOutputDataRowsByAnimalSpecies).forEach((species) => {    
-    const species_drug_map = atb_species_drug_map[species];    
+    const species_drug_map = atb_species_drug_map[species];
+    if ( !species_drug_map) {
+        console.error(`No Species Drug Map exists for "${species}"`);
+        process.exit(4);
+    }
     const species_has_organism_partition = !Array.isArray(species_drug_map);
 
     if(species_has_organism_partition){
