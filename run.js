@@ -33,7 +33,9 @@ const atb_species_drug_map = {
     'Poultry-domestic chicken': ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
     'Poultry-domestic turkey':  ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
     'Poultry-domestic ducks':    ['AMOXIC','CEFTIF','CLINDA','ENROFL','ERYTH','FLORFE','GENTAM','NEOMYC','NOVOBI','OXYTET','PENICI','SDIMET','SPECT','STREPT','SULTHI','TETRA','TRISUL','TYLO'],
-    'Equine':  ['AMIKAC','AMPICI','AZITHR','CEFAZO','CEFTAZ','CEFTIF','CHLORA','CLARYT','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','OXACIL','PENICI','RIFAMP','TETRA','TICARC','TICCLA','TRISUL'],
+    // OLD EQUINE PANEL (CHANGED 2/10/2020)
+    // 'Equine':  ['AMIKAC','AMPICI','AZITHR','CEFAZO','CEFTAZ','CEFTIF','CHLORA','CLARYT','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','OXACIL','PENICI','RIFAMP','TETRA','TICARC','TICCLA','TRISUL'],
+    'Equine':  ['AMIKAC','AMPICI','CEFAZO','CEFTAZ','CEFTIF','CHLORA','CLARYT','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','MINOCY','OXACIL','PENICI','RIFAMP','TETRA','TRISUL'],    
     'Dog':  {
         'dog-cat GN': {
             'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEFTAZ','CEPALE','CHLORA','DOXYCY','ENROFL','GENTAM','IMIPEN','MARBOF','ORBIFL','PIPTAZ','PRADOF','TETRA','TRISUL'],
@@ -203,6 +205,7 @@ function expandSpeciesRows(species, rows, species_drug_map){
                 console.error(`Encountered unknown drug '${a}' in species '${species}' Sensititre data for Accession # ${accessionNumber}`, i-atb_offset);
                 console.log(row.slice(atb_offset));
                 process.exit(3);
+                // continue;
             }
             const base = drugIndex * 3;
             targetDrugContent[base] = a;
