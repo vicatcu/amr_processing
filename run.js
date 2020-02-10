@@ -43,7 +43,7 @@ const atb_species_drug_map = {
         },
         'dog-cat GP': {
             'drug_map': ['AMIKAC','AMOCLA','AMPICI','CEFAZO','CEFOVE','CEFPOD','CEPHAL','CHLORA','CLINDA','DOXYCY','ENROFL','ERYTH','GENTAM','IMIPEN','MARBOF','MINOCY','NITRO','OXACIL','PENICI','PRADOF','RIFAMP','TETRA','TRISUL','VANCOM'],
-            'organism_regex': /(Staphylococcus)/
+            'organism_regex': /(Staphylococcus)|(Streptococcus)/
         }
     },
     'Cat':  {
